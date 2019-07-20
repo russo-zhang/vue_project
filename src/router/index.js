@@ -6,6 +6,7 @@ import VueRouter from 'vue-router'
 
 // 引入单文件组件
 import Login from '@/components/login.vue'
+import System from '@/components/system.vue'
 
 // use一下
 Vue.use(VueRouter)
@@ -21,6 +22,11 @@ const router = new VueRouter({
       name: 'login',
       path: '/login',
       component: Login
+    },
+    {
+      name:"system",
+      path:"/system",
+      component:System
     }
   ]
 })

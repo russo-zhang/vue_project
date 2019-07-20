@@ -3,14 +3,14 @@
     <div class="container">
       <el-form :model="loginForm" :rules="rules" ref="loginForm" class="demo-loginForm">
       <img v-bind:src="userImg" alt="" class="avatar">
-      <el-form-item prop="userName">
-        <el-input v-model="loginForm.userName"></el-input>
+      <el-form-item prop="username" >
+        <el-input v-model="loginForm.username" prefix-icon="myicon myicon-user"></el-input>
       </el-form-item>
       <el-form-item prop="password">
-        <el-input v-model="loginForm.password"></el-input>
+        <el-input v-model="loginForm.password" prefix-icon="el-icon-loading" show-password></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" @click="submitForm('loginForm')" class="login-btn">登录</el-button>
+        <el-button type="primary" @click="login" class="login-btn">登录</el-button>
       </el-form-item>
     </el-form>
     </div>
@@ -18,15 +18,17 @@
 </template>
 
 <script>
+// import router from '@/router/index.js'
+import {login} from '@/api/api_login.js'
 export default {
   data () {
     return {
       loginForm: {
-        userName: '',
-        password: ''
+        username: 'admin',
+        password: '123456'
       },
       rules: {
-        userName: [
+        username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
         ],
         password: [
@@ -38,20 +40,30 @@ export default {
     }
   },
   methods: {
-    submitForm (formName) {
-      this.$refs[formName].validate(valid => {
+    login () {
+      this.$refs.loginForm.validate(valid => {
         if (valid) {
-          alert('submit!')
+          login(this.loginForm).then((res)=>{
+            if(res.data.meta.status==200){
+              this.$router.push({name:"system"})
+            }else{
+              this.$message({
+          message: res.data.meta.msg,
+            })
+            }
+          })
         } else {
-          console.log('error submit!!')
+          this.$message({
+          message: '用户数据不合法',
+          type: 'error'
+        });
           return false
         }
       })
-    },
-    resetForm (formName) {
-      this.$refs[formName].resetFields()
     }
+
   }
+
 }
 </script>
 
