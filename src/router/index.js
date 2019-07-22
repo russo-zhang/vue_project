@@ -6,7 +6,11 @@ import VueRouter from 'vue-router'
 
 // 引入单文件组件
 import Login from '@/components/login.vue'
-import System from '@/components/system.vue'
+import Home from '@/components/home.vue'
+import Welcome from '@/components/welcome.vue'
+import Users from '@/components/users/users.vue'
+import Demo1 from '@/components/demo/demo1.vue'
+
 
 // use一下
 Vue.use(VueRouter)
@@ -19,14 +23,31 @@ const router = new VueRouter({
       redirect: { name: 'login' }
     },
     {
+      name: 'demo1',
+      path: '/demo1',
+      component: Demo1
+    },
+    {
       name: 'login',
       path: '/login',
       component: Login
     },
     {
-      name:"system",
-      path:"/system",
-      component:System
+      name:"home",
+      path:"/home",
+      component:Home,
+      redirect:{name:"welcome"},
+      children:[
+        {
+          name:"welcome",
+          path:"/welcome",
+          component:Welcome
+        }, {
+          name:"users",
+          path:"/users",
+          component:Users
+        }
+      ]
     }
   ]
 })

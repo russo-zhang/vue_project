@@ -1,6 +1,6 @@
 <template>
 <div>
-   <h1>这个是后台首页</h1>
+   <p>欢迎回来</p>
 </div>
 </template>
  

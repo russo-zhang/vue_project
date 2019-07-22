@@ -19,7 +19,7 @@
 
 <script>
 // import router from '@/router/index.js'
-import {login} from '@/api/api_login.js'
+import {login} from '@/api/api_users.js'
 export default {
   data () {
     return {
@@ -44,8 +44,10 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           login(this.loginForm).then((res)=>{
+           
             if(res.data.meta.status==200){
-              this.$router.push({name:"system"})
+              localStorage.setItem("vue_project_token_user_key",res.data.data.token)
+              this.$router.push({name:"home"})
             }else{
               this.$message({
           message: res.data.meta.msg,
