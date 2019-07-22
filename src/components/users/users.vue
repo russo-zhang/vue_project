@@ -3,16 +3,16 @@
     <!-- 面包屑 -->
     <el-breadcrumb separator-class="el-icon-arrow-right">
       <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-      <el-breadcrumb-item>用户列表</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{path:'/users'}">用户管理</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{path:'/users'}">用户列表</el-breadcrumb-item>
     </el-breadcrumb>
 
     <!-- 搜索框 -->
     <div style="margin-top: 15px;">
-      <el-input placeholder="请输入内容" v-model="search_text" class="input-with-select search_text">
+      <el-input placeholder="请输入内容" v-model="userList.query" class="input-with-select search_text">
         <el-button slot="append" icon="el-icon-search"></el-button>
       </el-input>
-      <el-button type="primary" class="addBtn" @click="addUser">添加用户</el-button>
+      <el-button type="primary" class="addBtn" @click="addDialogue=true">添加用户</el-button>
     </div>
 
     <!-- 用户表格 -->
@@ -33,48 +33,112 @@
       </el-table-column>
       <el-table-column label="操作">
         <template slot-scope="scope">
-          <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+          <el-button size="mini" type="info" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
           <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">删除</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">分配角色</el-button>
+          <el-button size="mini" type="success" @click="handleDelete(scope.$index, scope.row)">分配角色</el-button>
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 分页器 -->
+    <el-pagination
+      background
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="userList.pagenum"
+      :page-sizes="[3, 4, 5, 10]"
+      :page-size="userList.pagesize"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="userList.total"
+    ></el-pagination>
+
+    <!-- 添加用户对话框 -->
+    <el-dialog title="添加用户" :visible.sync="addDialogue">
+      <el-form :model="managers" :label-width="'auto'" :rules="rules" ref="managers">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="managers.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="managers.password" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="managers.email" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" prop="mobile">
+          <el-input v-model="managers.mobile" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="addDialogue = false">取 消</el-button>
+        <el-button type="primary" @click="addUser">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
  
 <script>
-import { getUsersData,addUser } from "@/api/api_users.js";
+import { getUsersData, addUser } from "@/api/api_users.js";
 export default {
   data() {
     return {
       value: true,
       search_text: "",
       userList: {
+        query: "",
         pagenum: 1,
-        pagesize: 10
+        pagesize: 5
       },
-      users: []
+      users: [],
+      addDialogue: false,
+      managers: {
+        username: "",
+        password: "",
+        email: "",
+        mobile: ""
+      },
+      rules: {
+        username: [
+          { required: true, message: "用户名不能为空", trigger: "blur" }
+        ],
+        password: [
+          { required: true, message: "密码不能为空", trigger: "blur" }
+        ],
+        email: [
+          // {required:true,message:"邮箱不能为空",trigger:"blur"},
+          // {pattern:/^\w+@{1}\w+[.]{1}\w+$/,message:"邮箱格式不正确",trigger:"blur"}
+        ],
+        mobile: [
+          // {required:true,message:"手机号不能为空",trigger:"blur"},
+          // {pattern:/^[1]{1}[3578]{1}\d{9}$/,message:"手机号格式不正确",trigger:"blur"}
+        ]
+      }
     };
   },
   methods: {
-     addUser(){
-         this.$prompt('请输入邮箱', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/,
-          inputErrorMessage: '邮箱格式不正确'
-        }).then(({ value }) => {
+    init() {
+      getUsersData(this.userList).then(res => {
+        this.users = res.data.data.users;
+        this.userList.total = res.data.data.total;
+      });
+    },
+    addUser() {
+      addUser(this.managers).then(res => {
+        // console.log(res);
+        if (res.data.meta.status == 201) {
           this.$message({
-            type: 'success',
-            message: '你的邮箱是: ' + value
+            message: "添加用户成功",
+            type: "success"
           });
-        }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: '取消输入'
-          });       
-        });
-     },
+          this.addDialogue = false;
+          this.init();
+
+          // 重置表单
+          this.$refs.managers.resetFields();
+        } else {
+          this.$message.error(res.data.meta.msg);
+        }
+      });
+    },
     handleEdit(index, row) {
       console.log(index, row);
     },
@@ -83,12 +147,25 @@ export default {
     },
     usersState(index, row) {
       console.log(index, row);
+    },
+
+    //分页器分页功能
+    handleSizeChange(val) {
+      this.userList.pagesize = val;
+      this.init();
+    },
+    handleCurrentChange(val) {
+      this.userList.pagenum = val;
+      this.init();
     }
   },
   mounted() {
-    getUsersData(this.userList).then(res => {
-      this.users = res.data.data.users;
-    });
+    this.init();
+  },
+  watch: {
+    "userList.query"() {
+      this.init();
+    }
   }
 };
 </script>
@@ -103,8 +180,8 @@ export default {
 .search_text {
   width: 330px;
 }
-.addBtn{
-   margin-left:20px;
-   margin-bottom:5px
+.addBtn {
+  margin-left: 20px;
+  margin-bottom: 5px;
 }
 </style>

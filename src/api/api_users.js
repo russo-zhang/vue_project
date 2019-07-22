@@ -22,7 +22,7 @@ export const addUser = (data)=>{
     url:"users",
     method:"post",
     data
-  })
+  }) 
 }
 
 

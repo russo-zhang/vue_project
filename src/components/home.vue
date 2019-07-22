@@ -66,9 +66,6 @@ export default {
   display: flex;
   flex-direction: row;
   height: 100%;
-  .el-menu {
-    width: auto;
-  }
   .el-menu:not(.el-menu--collapse) {
     width: 200px;
     min-height: 400px;  
@@ -117,12 +114,6 @@ export default {
       background-color: #4292cf;
     }
   }
-  .system-title {
-    font-size: 28px;
-    color: white;
-  }
-  .welcome {
-    color: white;
-  }
+
 }
 </style>
