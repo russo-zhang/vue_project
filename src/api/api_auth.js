@@ -6,3 +6,11 @@ export const getAuthList = ()=>{
   })
 }
 
+export const cancelAuth = (roleId,rightId)=>{
+  return axios({
+    url:`roles/${roleId}/rights/${rightId}`,
+    method:"delete"
+  })
+}
+
+

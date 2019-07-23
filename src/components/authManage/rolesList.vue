@@ -13,23 +13,45 @@
     <!-- 角色表格 -->
     <el-table :data="rolesForm" style="width: 100%" border stripe>
       <el-table-column type="expand">
-        <template >
-          <el-form label-position="left" inline class="demo-table-expand">
-            <el-row :gutter="10">
-              <el-col :xs="8" :sm="6" :md="4" :lg="3" :xl="1">
-                <div class="grid-content bg-purple"></div>
-              </el-col>
-              <el-col :xs="4" :sm="6" :md="8" :lg="9" :xl="11">
-                <div class="grid-content bg-purple-light"></div>
-              </el-col>
-              <el-col :xs="4" :sm="6" :md="8" :lg="9" :xl="11">
-                <div class="grid-content bg-purple"></div>
-              </el-col>
-              <el-col :xs="8" :sm="6" :md="4" :lg="3" :xl="1">
-                <div class="grid-content bg-purple-light"></div>
-              </el-col>
-            </el-row>
-          </el-form>
+        <template slot-scope="scope">
+          <el-row
+            :key="first.id"
+            v-for="first in scope.row.children"
+            style="margin-bottom:5px;border-bottom:1px dashed #ccc"
+          >
+            <el-col :span="4">
+              <el-tag
+                :type="'success'"
+                closable
+                :disable-transitions="false"
+                @close="handleClose(scope.row.children,scope.row.id,first.id)"
+              >{{first.authName}}</el-tag>
+            </el-col>
+            <el-col :span="20">
+              <el-row :key="second.id" v-for="second in first.children" style="margin-bottom:5px">
+                <el-col :span="4">
+                  <el-row>
+                    <el-tag
+                      closable
+                      :disable-transitions="false"
+                      @close="handleClose(scope.row.children,scope.row.id,second.id)"
+                    >{{second.authName}}</el-tag>
+                  </el-row>
+                </el-col>
+                <el-col :span="20">
+                  <el-tag
+                    :type="'info'"
+                    closable
+                    :disable-transitions="false"
+                    @close="handleClose(scope.row.children,scope.row.id,third.id)"
+                    :key="third.id"
+                    v-for="third in second.children"
+                    style="margin:0px 5px 5px 0px"
+                  >{{third.authName}}</el-tag>
+                </el-col>
+              </el-row>
+            </el-col>
+          </el-row>
         </template>
       </el-table-column>
       <el-table-column type="index"></el-table-column>
@@ -48,6 +70,7 @@
  
 <script>
 import { getAllRoles } from "@/api/api_roles.js";
+import { cancelAuth } from "@/api/api_auth.js";
 export default {
   data() {
     return {
@@ -57,6 +80,7 @@ export default {
   methods: {
     async init() {
       let res = await getAllRoles();
+      // console.log(res)
       if (res.data.meta.status != 200)
         return this.$message.error(res.data.meta.msg);
       this.rolesForm = res.data.data;
@@ -66,6 +90,16 @@ export default {
     },
     handleDelete(row) {
       console.log(row);
+    },
+
+    // 关闭权限标签
+    async handleClose(arr, roleId, rightId) {
+      let res = await cancelAuth(roleId, rightId);
+      console.log(arr);
+      if (res.data.meta.status != 200)
+        return this.$message.error(res.data.meta.msg);
+      console.log(res.data.data);
+      arr = res.data.data;
     }
   },
   mounted() {
@@ -75,20 +109,4 @@ export default {
 </script>
  
 <style lang='less' scoped>
- .el-col {
-    border-radius: 4px;
-  }
-  .bg-purple-dark {
-    background: #99a9bf;
-  }
-  .bg-purple {
-    background: #d3dce6;
-  }
-  .bg-purple-light {
-    background: #e5e9f2;
-  }
-  .grid-content {
-    border-radius: 4px;
-    min-height: 36px;
-  }
 </style>
