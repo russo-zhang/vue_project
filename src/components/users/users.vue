@@ -324,7 +324,6 @@ export default {
 
     // 分配角色
     async divideRole() {
-    
     let res = await divideRole(this.divideForm)
     if (res.data.meta.status != 200)
         return this.$message.error(res.data.meta.msg);

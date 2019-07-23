@@ -8,11 +8,10 @@ export const login = (data) => {
   })
 }
 
-export const getUsersData = (data) => {
-  // var token = localStorage.getItem("vue_project_token_user_key")
+export const getUsersData = (params) => {
   return axios({
     url: 'users',
-    params: { ...data }
+    params
     // headers: { "Authorization": token } 单个添加请求头
   })
 }

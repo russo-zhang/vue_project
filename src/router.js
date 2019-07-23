@@ -9,6 +9,8 @@ import Login from '@/components/login.vue'
 import Home from '@/components/home.vue'
 import Welcome from '@/components/welcome.vue'
 import Users from '@/components/users/users.vue'
+import RolesList from '@/components/authManage/rolesList.vue'
+import AuthorityList from '@/components/authManage/authList.vue'
 
 // 测试组件
 import Demo1 from '@/components/demo/demo1.vue'
@@ -48,9 +50,20 @@ const router = new VueRouter({
           name: "users",
           path: "/users",
           component: Users
+        },
+        {
+          name:"roleLsist",
+          path:"/rolesList",
+          component:RolesList
+        },
+        {
+          name:"authList",
+          path:"/authList",
+          component:AuthorityList
         }
       ]
-    }
+    },
+     
   ]
 })
 

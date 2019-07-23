@@ -2,7 +2,7 @@ import Vue from 'vue'
 import App from './App.vue'
 
 // 引入路由模块
-import router from '@/router/index.js'
+import router from '@/router.js'
 
 // 引入element-ui
 import ElementUI from 'element-ui'
