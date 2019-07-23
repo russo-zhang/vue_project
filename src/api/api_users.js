@@ -25,6 +25,28 @@ export const addUser = (data)=>{
   }) 
 }
 
+export const editUser = (data)=>{
+  return axios({
+    url:`users/${data.id}`,
+    method:"put",
+    data
+  }) 
+}
+
+export const delUserById = (id)=>{
+  return axios({
+    url:`users/${id}`,
+    method:"delete",
+  }) 
+}
+
+export const userState = (data)=>{
+  return axios({
+    url:`users/${data.uId}/state/${data.type}`,
+    method:"put",
+  }) 
+}
+
 
 
 

@@ -9,6 +9,8 @@ import Login from '@/components/login.vue'
 import Home from '@/components/home.vue'
 import Welcome from '@/components/welcome.vue'
 import Users from '@/components/users/users.vue'
+
+// 测试组件
 import Demo1 from '@/components/demo/demo1.vue'
 
 
@@ -33,19 +35,19 @@ const router = new VueRouter({
       component: Login
     },
     {
-      name:"home",
-      path:"/home",
-      component:Home,
-      redirect:{name:"welcome"},
-      children:[
+      name: "home",
+      path: "/home",
+      component: Home,
+      redirect: { name: "welcome" },
+      children: [
         {
-          name:"welcome",
-          path:"/welcome",
-          component:Welcome
+          name: "welcome",
+          path: "/welcome",
+          component: Welcome
         }, {
-          name:"users",
-          path:"/users",
-          component:Users
+          name: "users",
+          path: "/users",
+          component: Users
         }
       ]
     }

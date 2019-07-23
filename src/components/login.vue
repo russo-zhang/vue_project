@@ -56,7 +56,7 @@ export default {
           })
         } else {
           this.$message({
-          message: '用户数据不合法',
+          message: '数据格式不正确请检查',
           type: 'error'
         });
           return false
