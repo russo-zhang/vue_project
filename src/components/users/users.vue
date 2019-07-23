@@ -35,7 +35,7 @@
         <template slot-scope="scope">
           <el-button size="mini" type="info" @click="showEditDialogue(scope.row)">编辑</el-button>
           <el-button size="mini" type="danger" @click="showDelDialogue(scope.row)">删除</el-button>
-          <el-button size="mini" type="success" @click="handleDelete(scope.row)">分配角色</el-button>
+          <el-button size="mini" type="success" @click="showdivideDialogue(scope.row)">分配角色</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -92,6 +92,29 @@
         <el-button type="primary" @click="editUser">确 定</el-button>
       </div>
     </el-dialog>
+
+    <!-- 分配角色对话框 -->
+    <el-dialog title="分配角色" :visible.sync="divideDialogue">
+      <el-form :model="divideForm" :label-width="'auto'" ref="divideForm">
+        <el-form-item label="用户名:">
+          <span>{{divideForm.username}}</span>
+        </el-form-item>
+        <el-form-item label="请选择角色:">
+          <el-select v-model="divideForm.rid" clearable placeholder="请选择">
+            <el-option
+              v-for="item in roleList"
+              :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="divideDialogue=false">取 消</el-button>
+        <el-button type="primary" @click="divideRole">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
  
@@ -103,6 +126,7 @@ import {
   delUserById,
   userState
 } from "@/api/api_users.js";
+import { getAllRoles,divideRole } from "@/api/api_roles.js";
 export default {
   data() {
     return {
@@ -118,6 +142,7 @@ export default {
       users: [],
       addDialogue: false,
       editDialogue: false,
+      divideDialogue: false,
       managers: {
         username: "",
         password: "",
@@ -128,6 +153,13 @@ export default {
         username: "",
         email: "",
         mobile: ""
+      },
+      roleList: [],
+      divideForm: {
+        username: "",
+        role_name: "",
+        rid: "",
+        id:""
       },
       rules: {
         username: [
@@ -275,6 +307,33 @@ export default {
       } else {
         this.$message.error(res.data.meta.msg);
       }
+    },
+
+    // 分配角色弹窗
+    async showdivideDialogue(row) {
+      this.divideDialogue = true;
+      this.divideForm.username = row.username;
+      this.divideForm.role_name = row.role_name;
+      this.divideForm.rid = row.rid;
+      this.divideForm.id = row.id;
+      let res = await getAllRoles(row);
+      if (res.data.meta.status != 200)
+        return this.$message.error(res.data.meta.msg);
+      this.roleList = res.data.data;
+    },
+
+    // 分配角色
+    async divideRole() {
+    
+    let res = await divideRole(this.divideForm)
+    if (res.data.meta.status != 200)
+        return this.$message.error(res.data.meta.msg);
+      this.$message({
+          message: "用户角色分配成功",
+          type: "success"
+        });
+      this.divideDialogue = false
+        this.init();
     },
 
     //分页器分页功能
