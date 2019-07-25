@@ -212,6 +212,7 @@ export default {
 
               // 重置表单
               this.$refs.managers.resetFields();
+              console.log(this.$refs.managers.managers)
             } else {
               this.$message.error(res.data.meta.msg);
             }

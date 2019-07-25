@@ -6,10 +6,24 @@ export const getAuthList = ()=>{
   })
 }
 
+export const getAuthTree = ()=>{
+  return axios({
+    url:`rights/tree`
+  })
+}
+
 export const cancelAuth = (roleId,rightId)=>{
   return axios({
     url:`roles/${roleId}/rights/${rightId}`,
     method:"delete"
+  })
+}
+
+export const grantAuth = (roleId,rids)=>{
+  return axios({
+    url:`roles/${roleId}/rights`,
+    method:"post",
+    data:{rids}
   })
 }
 

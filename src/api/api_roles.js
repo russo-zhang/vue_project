@@ -14,3 +14,11 @@ export const divideRole = (data)=>{
     data
   })
 }
+
+export const addRole = (data)=>{
+  return axios({
+    url:`roles`,
+    method:"post",
+    data
+  })
+}

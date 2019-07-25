@@ -8,10 +8,15 @@
     </el-breadcrumb>
 
     <!-- 添加按钮 -->
-    <el-button type="primary" icon="el-icon-thumb" style="margin-bottom:5px">添加角色</el-button>
+    <el-button
+      type="primary"
+      icon="el-icon-thumb"
+      style="margin-bottom:5px"
+      @click="isShowAddRoleDialogue=true"
+    >添加角色</el-button>
 
     <!-- 角色表格 -->
-    <el-table :data="rolesForm" style="width: 100%" border stripe>
+    <el-table :data="rolesForm" style="width: 100%" border stripe @expand-change="showTag">
       <el-table-column type="expand">
         <template slot-scope="scope">
           <el-row
@@ -24,7 +29,8 @@
                 :type="'success'"
                 closable
                 :disable-transitions="false"
-                @close="handleClose(scope.row.children,scope.row.id,first.id)"
+                @close="handleClose(scope.row,first.id)"
+                v-show="isShowTag"
               >{{first.authName}}</el-tag>
             </el-col>
             <el-col :span="20">
@@ -34,7 +40,8 @@
                     <el-tag
                       closable
                       :disable-transitions="false"
-                      @close="handleClose(scope.row.children,scope.row.id,second.id)"
+                      @close="handleClose(scope.row,second.id)"
+                      v-show="isShowTag"
                     >{{second.authName}}</el-tag>
                   </el-row>
                 </el-col>
@@ -43,10 +50,11 @@
                     :type="'info'"
                     closable
                     :disable-transitions="false"
-                    @close="handleClose(scope.row.children,scope.row.id,third.id)"
+                    @close="handleClose(scope.row,third.id,third)"
                     :key="third.id"
                     v-for="third in second.children"
                     style="margin:0px 5px 5px 0px"
+                    v-show="isShowTag"
                   >{{third.authName}}</el-tag>
                 </el-col>
               </el-row>
@@ -61,20 +69,67 @@
         <template slot-scope="scope">
           <el-button size="mini" plain type="primary" @click="handleEdit(scope.row)">编辑角色</el-button>
           <el-button size="mini" type="danger" plain @click="handleDelete(scope.row)">删除角色</el-button>
-          <el-button size="mini" type="info" plain>授权角色</el-button>
+          <el-button size="mini" type="info" plain @click="authDialogue(scope.row)">授权角色</el-button>
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 添加角色对话框 -->
+    <el-dialog title="添加角色" :visible.sync="isShowAddRoleDialogue">
+      <el-form :model="addRoleForm" :label-width="'70px'" ref="addRoleForm">
+        <el-form-item label="角色名称" prop="roleName">
+          <el-input v-model="addRoleForm.roleName" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="角色描述" prop="roleDesc">
+          <el-input v-model="addRoleForm.roleDesc" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="isShowAddRoleDialogue = false">取 消</el-button>
+        <el-button type="primary" @click="addRole">确 定</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 授权角色对话框 -->
+    <el-dialog title="授权角色" :visible.sync="showAuthDialogue">
+      <el-tree
+        ref="authTree"
+        :data="authForm"
+        show-checkbox
+        node-key="id"
+        :default-expand-all="true"
+        :default-checked-keys="authIdArr"
+        :props="defaultProps"
+      ></el-tree>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="showAuthDialogue = false">取 消</el-button>
+        <el-button type="primary" @click="grantAuth">确 定</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
  
 <script>
-import { getAllRoles } from "@/api/api_roles.js";
-import { cancelAuth } from "@/api/api_auth.js";
+import { getAllRoles, addRole } from "@/api/api_roles.js";
+import { cancelAuth, getAuthTree, grantAuth } from "@/api/api_auth.js";
 export default {
   data() {
     return {
-      rolesForm: []
+      authForm: [],
+      authIdArr: [],
+      defaultProps: {
+        children: "children",
+        label: "authName"
+      },
+      rolesForm: [],
+      isShowTag: false,
+      showAuthDialogue: false,
+      isShowAddRoleDialogue:false,
+      addRoleForm: {
+        roleName:"",
+        roleDesc:""
+      }
     };
   },
   methods: {
@@ -85,6 +140,30 @@ export default {
         return this.$message.error(res.data.meta.msg);
       this.rolesForm = res.data.data;
     },
+
+
+    // 添加角色
+    async addRole() {
+      let res = await addRole(this.addRoleForm)
+      if (res.data.meta.status != 201)
+        return this.$message.error(res.data.meta.msg);
+        this.$message({
+        message: "角色添加成功",
+        type: "success"
+      });
+      this.isShowAddRoleDialogue = false;
+      this.init();
+      this.$refs.addRoleForm.resetFields();
+  
+    },
+
+    // 获取所有权限树
+    async getAuthTree() {
+      let res = await getAuthTree();
+      if (res.data.meta.status != 200)
+        return this.$message.error(res.data.meta.msg);
+      this.authForm = res.data.data;
+    },
     handleEdit(row) {
       console.log(row);
     },
@@ -92,18 +171,74 @@ export default {
       console.log(row);
     },
 
-    // 关闭权限标签
-    async handleClose(arr, roleId, rightId) {
-      let res = await cancelAuth(roleId, rightId);
-      console.log(arr);
+    // 打开权限树对话框
+    async authDialogue(row) {
+      let res = await getAuthTree();
+      this.authForm = res.data.data;
+      this.showAuthDialogue = true;
+      this.authIdArr = [];
+      row.children.forEach(first => {
+        first.children.forEach(second => {
+          second.children.forEach(third => {
+            this.authIdArr.push(third.id);
+          });
+        });
+      });
+      this.authDialogueCurrentRow = row;
+    },
+
+    // 授权请求
+    async grantAuth() {
+      let roleId = this.authDialogueCurrentRow.id;
+
+      // 新方法(便捷)
+      // console.log(this.$refs.authTree.getCheckedKeys())
+      // console.log(this.$refs.authTree.getHalfCheckedKeys())
+
+      let arr = this.$refs.authTree.getCheckedNodes();
+      let str = "";
+      arr.forEach((item, index) => {
+        str += item.id + "," + item.pid + ",";
+      });
+      let new_str = str.slice(0, -1);
+      // let new_arr = new_str.split(",")
+      let new_arr = [...new Set(new_str.split(","))]; //ES6新语法数组去重
+      let rids = new_arr.join(",");
+      let res = await grantAuth(roleId, rids);
       if (res.data.meta.status != 200)
         return this.$message.error(res.data.meta.msg);
-      console.log(res.data.data);
-      arr = res.data.data;
+      this.$message({
+        message: "权限更新成功",
+        type: "success"
+      });
+      this.showAuthDialogue = false;
+      this.init();
+    },
+
+    // 关闭权限标签
+    async handleClose(row, rightId) {
+      let res = await cancelAuth(row.id, rightId);
+      // console.log(arr);
+      if (res.data.meta.status != 200)
+        return this.$message.error(res.data.meta.msg);
+      this.$message({
+        message: "取消权限成功",
+        type: "success"
+      });
+      row.children = res.data.data;
+      // let tag=this.$refs.theTag
+    },
+
+    // 显示标签
+    showTag() {
+      var timer = setTimeout(() => {
+        this.isShowTag = !this.isShowTag;
+      }, 1);
     }
   },
   mounted() {
     this.init();
+    this.getAuthTree();
   }
 };
 </script>
