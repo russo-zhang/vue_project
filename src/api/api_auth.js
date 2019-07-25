@@ -27,4 +27,11 @@ export const grantAuth = (roleId,rids)=>{
   })
 }
 
+export const getLeftMenus = ()=>{
+  return axios({
+    url:`menus`,
+  })
+}
+
+
 

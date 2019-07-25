@@ -68,7 +68,7 @@
       <el-table-column label="操作">
         <template slot-scope="scope">
           <el-button size="mini" plain type="primary" @click="handleEdit(scope.row)">编辑角色</el-button>
-          <el-button size="mini" type="danger" plain @click="handleDelete(scope.row)">删除角色</el-button>
+          <el-button size="mini" type="danger" plain @click="delDialog(scope.row)">删除角色</el-button>
           <el-button size="mini" type="info" plain @click="authDialogue(scope.row)">授权角色</el-button>
         </template>
       </el-table-column>
@@ -90,6 +90,15 @@
       </div>
     </el-dialog>
 
+    <!-- 删除角色对话框 -->
+    <el-dialog title="提示" :visible.sync="delRoleVisible" width="30%" :before-close="handleClose">
+      <span>真的要删除吗</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="delRoleVisible = false">取 消</el-button>
+        <el-button type="primary" @click="delRole(delRoleId)">确 定</el-button>
+      </span>
+    </el-dialog>
+
     <!-- 授权角色对话框 -->
     <el-dialog title="授权角色" :visible.sync="showAuthDialogue">
       <el-tree
@@ -106,12 +115,11 @@
         <el-button type="primary" @click="grantAuth">确 定</el-button>
       </div>
     </el-dialog>
-
   </div>
 </template>
  
 <script>
-import { getAllRoles, addRole } from "@/api/api_roles.js";
+import { getAllRoles, addRole, delRole } from "@/api/api_roles.js";
 import { cancelAuth, getAuthTree, grantAuth } from "@/api/api_auth.js";
 export default {
   data() {
@@ -125,11 +133,13 @@ export default {
       rolesForm: [],
       isShowTag: false,
       showAuthDialogue: false,
-      isShowAddRoleDialogue:false,
+      isShowAddRoleDialogue: false,
+      delRoleVisible: false,
       addRoleForm: {
-        roleName:"",
-        roleDesc:""
-      }
+        roleName: "",
+        roleDesc: ""
+      },
+      delRoleId: ""
     };
   },
   methods: {
@@ -141,20 +151,36 @@ export default {
       this.rolesForm = res.data.data;
     },
 
-
     // 添加角色
     async addRole() {
-      let res = await addRole(this.addRoleForm)
+      let res = await addRole(this.addRoleForm);
       if (res.data.meta.status != 201)
         return this.$message.error(res.data.meta.msg);
-        this.$message({
+      this.$message({
         message: "角色添加成功",
         type: "success"
       });
       this.isShowAddRoleDialogue = false;
       this.init();
       this.$refs.addRoleForm.resetFields();
-  
+    },
+
+    // 删除角色框
+    delDialog(row) {
+      this.delRoleVisible=true
+      this.delRoleId=row.id
+    },
+    // 删除角色
+    async delRole(id){
+      let res = await delRole(id);
+       if (res.data.meta.status != 200)
+        return this.$message.error(res.data.meta.msg);
+      this.$message({
+        message: "角色删除成功",
+        type: "success"
+      });
+      this.delRoleVisible = false;
+      this.init();
     },
 
     // 获取所有权限树
@@ -165,9 +191,6 @@ export default {
       this.authForm = res.data.data;
     },
     handleEdit(row) {
-      console.log(row);
-    },
-    handleDelete(row) {
       console.log(row);
     },
 

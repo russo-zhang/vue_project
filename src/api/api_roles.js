@@ -22,3 +22,10 @@ export const addRole = (data)=>{
     data
   })
 }
+
+export const delRole = (id)=>{
+  return axios({
+    url:`roles/${id}`,
+    method:"delete",
+  })
+}

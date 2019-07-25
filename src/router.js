@@ -52,13 +52,13 @@ const router = new VueRouter({
           component: Users
         },
         {
-          name:"roleLsist",
-          path:"/rolesList",
+          name:"roles",
+          path:"/roles",
           component:RolesList
         },
         {
-          name:"authList",
-          path:"/authList",
+          name:"rights",
+          path:"/rights",
           component:AuthorityList
         }
       ]
